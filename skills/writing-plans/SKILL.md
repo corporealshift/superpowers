@@ -103,6 +103,43 @@ git commit -m "feat: add specific feature"
 ```
 ````
 
+## Plan Variant: Spec-Style (for subagent-driven-development)
+
+If you know the executor will be `superpowers:subagent-driven-development`, the implementer model writes the code at delegation time — so the plan does not need to embed full code blocks. Use Spec-Style when:
+
+- The chosen executor is `subagent-driven-development` (not `executing-plans`)
+- The implementer is a small local model where a code-heavy plan won't fit in its context anyway
+- You want the controller to curate code at delegation time rather than locking it in advance
+
+A Spec-Style task replaces inline code with explicit behavior and acceptance criteria:
+
+````markdown
+### Task N: [Component Name]
+
+**Files:**
+- Create: `exact/path/to/file.py`
+- Modify: `exact/path/to/existing.py:123-145`
+- Test: `tests/exact/path/to/test.py`
+
+**Signatures (must match across tasks):**
+- `function(input: InputType) -> ResultType`
+
+**Behavior:**
+- Plainly describe what the function/component must do, in the order it must do it.
+- Call out edge cases the implementer must handle.
+
+**Tests to add (by name and what they assert):**
+- `test_specific_behavior` — asserts `function(input)` returns `expected` for the happy path
+- `test_handles_empty_input` — asserts `ValueError` raised on empty input
+
+**Done when:**
+- Listed tests exist and pass
+- No unrequested behavior added
+- Committed
+````
+
+The "No Placeholders" rules still apply: vague behavior ("handle edge cases") is a placeholder even without code blocks. Signatures called out in a Spec-Style task feed the type-consistency self-review the same way inline code does in the Full-Detail variant.
+
 ## No Placeholders
 
 Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
@@ -115,8 +152,9 @@ Every step must contain the actual content an engineer needs. These are **plan f
 
 ## Remember
 - Exact file paths always
-- Complete code in every step — if a step changes code, show the code
-- Exact commands with expected output
+- Full-Detail variant: complete code in every step — if a step changes code, show the code
+- Spec-Style variant: explicit behavior, signatures, and test names — never vague "what to do" prose
+- Exact commands with expected output (or, in Spec-Style, the exact test names the implementer must produce)
 - DRY, YAGNI, TDD, frequent commits
 
 ## Self-Review
@@ -146,7 +184,9 @@ After saving the plan, offer execution choice:
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 - Fresh subagent per task + two-stage review
+- Spec-Style plans are appropriate here (the implementer writes code at delegation time)
 
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
 - Batch execution with checkpoints for review
+- Use the Full-Detail variant — `executing-plans` follows the plan literally and needs the code spelled out
