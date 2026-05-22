@@ -1,87 +1,89 @@
-# Llama Planner Delegation Template
+# pi Planner Delegation Template
 
-Use this template in the `writing-plans` skill, after Claude has produced the Scope
-Check, the File Structure map, and the task-list outline (which tasks exist, in what
-order). Those decomposition decisions are locked in by Claude. The planner expands
-that outline into the full plan body. Delegate via `mcp__llama-mcp__delegate_to_llama`.
+Use this template in the `writing-plans` skill, after Claude has done the Scope Check.
+The planner produces the whole plan: the File Structure map, the task decomposition
+(which tasks exist and in what order), and the full plan body. Only the Scope Check
+stays with Claude; the Self-Review gate after delegation also stays with Claude.
+Delegate via `pi -p @<brief-file>`; see
+`subagent-driven-development/implementer-prompt.md` for the canonical invocation
+mechanics and exit-status rule.
 
-## Persona Preamble (prepend verbatim into the `task` string)
+## Persona Preamble (prepend verbatim into the brief)
 
-> You are an implementation planner. The task decomposition is already decided — the
-> list of tasks, their order, and which files each touches are fixed. Do not add,
-> remove, reorder, or merge tasks. Your job is to expand each task in the outline into
-> the bite-sized step structure: the failing-test step, the run-it step, the
-> minimal-implementation step with real code, the verify step, and the commit step.
-> Every code step must contain actual, complete code — never "TBD", never "add error
-> handling", never "similar to Task N". Use exact file paths and exact commands with
-> expected output.
+> You are an implementation planner. Read the spec yourself and decide the
+> decomposition: map out which files to create or modify and what each is responsible
+> for, then break the work into tasks — each a self-contained, independently testable
+> change — in a sensible order. Expand every task into bite-sized steps: write the
+> failing test, run it to confirm it fails, write the minimal implementation with real
+> code, run the test to confirm it passes, commit. Every code step must contain actual,
+> complete code — never "TBD", never "add error handling", never "similar to Task N".
+> Use exact file paths and exact commands with their expected output.
 
 ## Brief Preparation (do this before delegating)
 
-1. **Paste the spec** — the planner needs the full spec text to write accurate code blocks.
-2. **Paste the File Structure map** — every file to create or modify and its responsibility.
-3. **Paste the task-list outline** — each task title, its order, the files it touches,
-   and any per-task notes you have already decided.
-4. **State the plan file path and the required plan header** —
+1. **Paste the Scope Check result** — confirm the spec is a single plan's worth of
+   work (or state how it was scoped), so the planner does not re-litigate scope.
+2. **Name the spec file path** — pi reads the spec itself; do not transcribe it.
+3. **State the plan file path and the required plan header** —
    `docs/superpowers/plans/YYYY-MM-DD-<feature>.md` plus the plan header block from
    the writing-plans skill.
-5. **Name the conventions** — test framework, run commands, and commit-message style,
+4. **Name the conventions** — test framework, run commands, and commit-message style,
    so generated steps match the codebase.
+
+pi can read an existing plan under `docs/superpowers/plans/` itself for format
+reference — point it at one rather than handing it format boilerplate.
 
 ## Delegation Call
 
+Write the brief to `.pi-delegations/planner-<timestamp>.md`:
+
 ```
-mcp__llama-mcp__delegate_to_llama:
-  task: |
-    [PERSONA PREAMBLE — paste verbatim from above]
+[PERSONA PREAMBLE — paste verbatim from above]
 
-    ## Write this implementation plan
+## Write this implementation plan
 
-    Write the plan to `<exact plan path>`, starting with the required header block below.
+Read the spec at `<spec path>`, then write the plan to `<exact plan path>`, starting
+with the required header block below. Produce the File Structure map and the task
+decomposition yourself, then expand every task into bite-sized steps. An existing plan
+under `docs/superpowers/plans/` is a useful format reference — read one if it exists.
 
-    ## Required plan header
+## Required plan header
 
-    [The exact header block from the writing-plans skill, filled in]
+[The exact header block from the writing-plans skill, filled in]
 
-    ## Spec (full text)
+## Scope
 
-    [Paste the full spec]
+[The Scope Check result — this spec is a single plan's worth of work]
 
-    ## File Structure map
+## Conventions
 
-    [Every file to create/modify and its responsibility]
+[Test framework, run commands, commit-message style]
 
-    ## Task-list outline
+## Done when
 
-    [Each task: title, order, files touched, per-task notes]
+The plan file exists at the path above, maps the file structure, decomposes the spec
+into ordered tasks, expands every task into bite-sized steps with complete code blocks,
+and contains no placeholders.
 
-    ## Conventions
+## On completion
 
-    [Test framework, run commands, commit-message style]
+Reply with a concise summary: the file you wrote and the list of tasks it contains.
+```
 
-    ## Done when
+Then run it from the project root:
 
-    The plan file exists at the path above, every task from the outline is expanded
-    into bite-sized steps with complete code blocks, and there are no placeholders.
-
-    ## On completion
-
-    Reply with a concise summary: the file you wrote and the list of tasks it contains.
-
-  working_dir: [absolute path — project root]
-  context_hints:
-    - [an existing plan under docs/superpowers/plans/ as a format reference, if one exists]
+```bash
+pi -p @.pi-delegations/planner-<timestamp>.md
 ```
 
 ## After Delegation
 
-Inspect the response fields (`result`, `files_changed`, `commands_run`, `stop_reason`,
-`transcript_path`) exactly as described in
-`subagent-driven-development/implementer-prompt.md` → "After Delegation". Handle
-`stop_reason` per the shared mapping in `subagent-driven-development/SKILL.md` →
-"Handling Llama stop_reason". For this prose persona, a budget-hit means re-delegating
-the plan task-by-task rather than escalating immediately.
+Handle pi's exit status per `subagent-driven-development/implementer-prompt.md` →
+"Handling pi exit status" (the canonical rule). For this prose persona, a budget or
+oversize failure means re-delegating the plan section-by-section rather than
+escalating immediately.
 
-Then run the writing-plans Self-Review yourself on Llama's plan — spec coverage,
-placeholder scan, type consistency, implementer fit. If you find issues, re-delegate a
-focused fix or fix them inline.
+Then run the writing-plans Self-Review yourself on pi's plan — spec coverage,
+placeholder scan, type consistency, implementer fit, and the decomposition check
+(task boundaries, ordering, right-sizing). If you find issues, re-delegate a focused
+fix or fix them inline.

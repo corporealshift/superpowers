@@ -24,6 +24,8 @@ If the spec covers multiple independent subsystems, it should have been broken i
 
 ## File Structure
 
+> The File Structure, Bite-Sized Task Granularity, and Task-Level Right-Sizing sections below define what the pi planner must produce. You delegate this decomposition to pi (see "Delegate Plan Creation") and validate its output in Self-Review.
+
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
 
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
@@ -132,25 +134,27 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 
-## Delegate Plan-Body Expansion
+## Delegate Plan Creation
 
-You have just done the judgment-heavy work yourself: the Scope Check, the File Structure map, and the task-list outline — which tasks exist and in what order. That decomposition is now locked in.
+You have done the judgment-heavy scoping yourself: the Scope Check confirms this spec is a single plan's worth of work.
 
-Delegate the *expansion* of that outline into the full plan body — each task rendered in the bite-sized step structure above, with real code blocks — to the Llama planner. See `planner-prompt.md` for the brief-preparation checklist and the delegation template.
+Delegate the whole plan — the File Structure map, the task decomposition (which tasks exist and in what order), and the bite-sized task bodies with real code blocks — to the pi planner. See `planner-prompt.md` for the brief-preparation checklist and the delegation template.
 
-You still own the Self-Review below: run it yourself on the plan Llama produces.
+You still own the Self-Review below: run it yourself on the plan pi produces, validating its decomposition as well as its content.
 
 ## Self-Review
 
-After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
+After pi produces the plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
 
 **1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
 
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+**2. Placeholder scan:** Search the plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
 
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+**3. Type consistency:** Do the types, method signatures, and property names used in later tasks match what was defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 **4. Implementer fit:** Walk each task and ask: could a small-context implementer finish this in one focused pass, without reading large files end-to-end? If a task fails that check, split it against the "Task-Level Right-Sizing" signs above.
+
+**5. Decomposition soundness:** pi decided the decomposition — validate it against the spec. Are the task boundaries clean (each task a self-contained, independently testable change)? Is the ordering correct (no task depends on a later one)? Is anything bundled that should be split, or split that should be one task? Fix boundary or ordering problems before execution.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
