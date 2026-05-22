@@ -1,11 +1,13 @@
-# Llama Feature Designer Delegation Template
+# pi Feature Designer Delegation Template
 
 Use this template at step 6 of the `brainstorming` skill ("Write design doc"), after
 the design has been approved with the user (step 5). Every design decision is already
 made; the feature designer's job is to turn the approved design into a well-structured
-spec document. Delegate via the `mcp__llama-mcp__delegate_to_llama` MCP tool.
+spec document. Delegate via `pi -p @<brief-file>`; see
+`subagent-driven-development/implementer-prompt.md` for the canonical invocation
+mechanics and exit-status rule.
 
-## Persona Preamble (prepend verbatim into the `task` string)
+## Persona Preamble (prepend verbatim into the brief)
 
 > You are a feature designer. You are writing a design specification document from a
 > complete set of decisions that have already been made and approved. Every design
@@ -17,62 +19,68 @@ spec document. Delegate via the `mcp__llama-mcp__delegate_to_llama` MCP tool.
 
 ## Brief Preparation (do this before delegating)
 
+The approved design lives in this conversation, which pi cannot read — so the brief
+must carry the full design substance.
+
 1. **Collect every approved design section** — architecture, components, data flow,
    error handling, testing, non-goals. Paste the full substance of each into the
-   `task` string. The feature designer must not have to reconstruct decisions.
+   brief. The feature designer must not have to reconstruct decisions.
 2. **List the resolved decisions and tradeoffs** — for each significant choice, state
    what was chosen and what was rejected, so the spec records the reasoning.
 3. **State the exact spec file path** — `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`.
 4. **Provide the metadata** — date, author, status line.
 
+pi can read an existing spec under `docs/superpowers/specs/` itself for format
+reference — point it at one rather than handing it format boilerplate.
+
 ## Delegation Call
 
+Write the brief to `.pi-delegations/feature-designer-<timestamp>.md`:
+
 ```
-mcp__llama-mcp__delegate_to_llama:
-  task: |
-    [PERSONA PREAMBLE — paste verbatim from above]
+[PERSONA PREAMBLE — paste verbatim from above]
 
-    ## Write this spec document
+## Write this spec document
 
-    Write the design specification to `<exact spec path>`.
+Write the design specification to `<exact spec path>`. An existing spec under
+`docs/superpowers/specs/` is a useful format reference — read one if it exists.
 
-    ## Approved design (full substance)
+## Approved design (full substance)
 
-    [Every approved section, with all decisions inline]
+[Every approved section, with all decisions inline]
 
-    ## Resolved decisions and tradeoffs
+## Resolved decisions and tradeoffs
 
-    [Each choice: what was chosen, what was rejected, why]
+[Each choice: what was chosen, what was rejected, why]
 
-    ## Document metadata
+## Document metadata
 
-    Date / Author / Status: [values]
+Date / Author / Status: [values]
 
-    ## Done when
+## Done when
 
-    The spec file exists at the path above, covers every section listed, contains no
-    "TBD"/"TODO"/placeholder text, and records the resolved decisions. No code is written.
+The spec file exists at the path above, covers every section listed, contains no
+"TBD"/"TODO"/placeholder text, and records the resolved decisions. No code is written.
 
-    ## On completion
+## On completion
 
-    Reply with a concise summary: the file you wrote, the sections it contains, and
-    anything you flagged under "Open questions for Claude".
+Reply with a concise summary: the file you wrote, the sections it contains, and
+anything you flagged under "Open questions for Claude".
+```
 
-  working_dir: [absolute path — project root]
-  context_hints:
-    - [an existing spec under docs/superpowers/specs/ as a format reference, if one exists]
+Then run it from the project root:
+
+```bash
+pi -p @.pi-delegations/feature-designer-<timestamp>.md
 ```
 
 ## After Delegation
 
-Inspect the response fields (`result`, `files_changed`, `commands_run`, `stop_reason`,
-`transcript_path`) exactly as described in
-`subagent-driven-development/implementer-prompt.md` → "After Delegation". Handle
-`stop_reason` per the shared mapping in `subagent-driven-development/SKILL.md` →
-"Handling Llama stop_reason". For this prose persona, a budget-hit
-(`max_steps`/`timeout`/`token_limit`) means re-delegating the spec section-by-section
-rather than escalating immediately.
+Handle pi's exit status per `subagent-driven-development/implementer-prompt.md` →
+"Handling pi exit status" (the canonical rule). For this prose persona, a budget or
+oversize failure means re-delegating the spec section-by-section rather than
+escalating immediately.
 
-Then run brainstorming step 7 (spec self-review) yourself on Llama's draft — the
+Then run brainstorming step 7 (spec self-review) yourself on pi's draft — the
 placeholder, consistency, scope, and ambiguity checks. If you find issues, re-delegate
 a focused fix or fix them inline.
