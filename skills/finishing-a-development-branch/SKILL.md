@@ -41,15 +41,11 @@ Stop. Don't proceed to Step 2.
 
 **After tests pass and before detecting the environment, update documentation for the completed feature.**
 
-1. Read the branch diff to see what changed:
+1. Write a short feature summary — a paragraph describing what the completed feature does in user-facing terms. This is the substance of the brief; pi runs `git diff` itself to find the affected doc files.
 
-```bash
-git diff $(git merge-base HEAD main)..HEAD
-```
+2. If the feature touched nothing user-facing, this step is a no-op — continue to Step 3.
 
-2. Identify the user-facing documentation and changelog entries the feature touched. If nothing needs updating, this step is a no-op — continue to Step 3.
-
-3. Compose the brief — each doc file to update and the substance of each change — and delegate the writing to the Llama documenter. See `documenter-prompt.md` for the brief-preparation checklist and the delegation template.
+3. Compose the brief — the short feature summary plus an instruction to update user-facing documentation and the changelog — and delegate the writing to the pi documenter. See `documenter-prompt.md` for the brief-preparation checklist and the delegation template.
 
 4. Review the documentation diff, then commit it on the feature branch so the docs land before merge/PR:
 
